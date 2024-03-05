@@ -152,6 +152,14 @@ void createAMS(char* txtFileName, char* amsFileName){
         }
     }
 
+    for (int i = 0; i < MAX_NUMBER_TICKS; ++i) {
+        fprintf(wpf, "%03d|", i+1);
+        for (int j = 0; j < 60; ++j) {
+            fprintf(wpf, "%c", temp_tab[i][j]);
+            fprintf(wpf, " |");
+        }
+    }
+
     fclose(wpf);
     fclose(rpf);
 }
