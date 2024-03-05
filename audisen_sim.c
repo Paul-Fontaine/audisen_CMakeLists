@@ -33,7 +33,11 @@ void test_readAMS(){
     int i = 0;
 }
 
+void test_createAMS(){
+    createAMS("bohemian_rhapsody.txt", "test.ams");
+}
+
 int main(){
-    test_readAMS();
+    test_createAMS();
     return 0;
 }

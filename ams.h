@@ -8,6 +8,8 @@
 #include "define.h"
 
 s_tick tickFromLine(char* line);
+int durationFromLetter(char letter);
+int noteNumberFromString(char* string);
 
 struct song initSong();
 struct song readAMS(char* fileName);

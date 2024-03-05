@@ -26,6 +26,7 @@
 #define MAX_SIZE_LINE 190
 #define MAX_NUMBER_TICKS 999
 #define MAX_SONGNAME_SIZE 100
+#define MAX_TPM_SIZE 10
 
 typedef
 struct tick{

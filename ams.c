@@ -38,6 +38,39 @@ s_tick tickFromLine(char* line){
     return tick_;
 }
 
+int durationFromLetter(char letter){
+    switch (letter){
+        case 'R':
+            return 8;
+        case 'B':
+            return 4;
+        case 'N':
+            return 2;
+        case 'C':
+            return 1;
+        default:
+            printf("Format error, I don't know this note %c", letter);
+            return 0;
+    }
+}
+
+int noteNumberFromString(char* string){
+    char notes[60][4] = {
+            "C1", "C#1", "D1", "D#1", "E1", "F1", "F#1", "G1", "G#1", "A1", "A#1", "B1",
+            "C2", "C#2", "D2", "D#2", "E2", "F2", "F#2", "G2", "G#2", "A2", "A#2", "B2",
+            "C3", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3",
+            "C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4",
+            "C5", "C#5", "D5", "D#5", "E5", "F5", "F#5", "G5", "G#5", "A5", "A#5", "B5"
+    };
+    int index = -1;
+    for (int i = 0; i < 60; ++i) {
+        if (strcmp(notes[i], string)){
+            index = i+1;
+        }
+    }
+    return index;
+}
+
 s_song readAMS(char* fileName){
 	FILE* pf = fopen(fileName, "r");
 	s_song mySong;
@@ -50,8 +83,8 @@ s_song readAMS(char* fileName){
 
 	}else{
 		fgets(mySong.title, MAX_SIZE_TITLE, pf); // 1ere ligne : titre
-        char tpm[5] ="";
-		fgets(tpm, 5, pf); // 2eme ligne : tpm
+        char tpm[MAX_TPM_SIZE] ="";
+		fgets(tpm, MAX_TPM_SIZE, pf); // 2eme ligne : tpm
         mySong.tpm = atoi(tpm);
 
         char buffer[MAX_SIZE_LINE] = "";
@@ -72,63 +105,53 @@ s_song readAMS(char* fileName){
 
 
 void createAMS(char* txtFileName, char* amsFileName){
-
+    FILE* rpf = fopen(txtFileName, "r");
     FILE* wpf = fopen(amsFileName, "w");
 
-    s_song mySong = readAMS(txtFileName);
-
-    fprintf(wpf, "%s\n", mySong.title);
-    fprintf(wpf, "%d\n", mySong.tpm);
+    char title[MAX_SIZE_TITLE] = "";
+    fgets(title, MAX_SIZE_TITLE, rpf); // 1ere ligne : titre
+    char tpm[MAX_TPM_SIZE] ="";
+    fgets(tpm, MAX_TPM_SIZE, rpf); // 2eme ligne : tpm
+    fprintf(wpf, title);
+    fprintf(wpf, "\n");
+    fprintf(wpf, tpm);
+    fprintf(wpf, "\n");
     fprintf(wpf, "\n");
 
+    // entêtes de colonnes
     fprintf(wpf, "    ");
-    for(int i = 1; i < 61; i++){
+    for(int i = 1; i <= 60; i++){
         fprintf(wpf, "%02d ", i);
     }
 
-    //R=8
-    //B=4
-    //N=2
-    //C=1
+    char buffer[10] = "";
+    fgets(buffer, 10, rpf); // 3ème ligne vide
 
-    for (int i = 0; token != NULL; ++i) {
-        token = strtok(NULL, ",");
-        switch (token[0]) {
-            case '^':
-                tick_.accent = 1;
-                tick_.note[j] = i;
-                break;
-            case 'x':
-                tick_.accent = 0;
-                tick_.note[j] = i;
-                break;
+    char temp_tab[MAX_NUMBER_TICKS][60];
+    for (int i = 0; i < MAX_NUMBER_TICKS; ++i) {
+        for (int j = 0; j < 60; ++j) {
+            temp_tab[i][j] = ' ';
         }
     }
 
-    for(int i = 1; i < mySong.nTicks+1; i++){
-        fprintf(wpf, "%03d|", i);
-        for(int j = 0; j < 4; j++){
-            if(mySong.tickTab[i].note[j] == 0){
-                fprintf(wpf, "  |");
-            }else{
-                if(mySong.tickTab[i].accent == 1){
-                    fprintf(wpf, "^ |");
-                }else{
-                    fprintf(wpf, "x |");
+    char line[MAX_SIZE_LINE] = "";
+    for (int i = 0; fgets(line, MAX_SIZE_LINE, rpf) != EOF; ++i) { // i = indice d'un tick/ligne d'ams
+        char* token = strtok(line, ",");
+        for (int j = 0; token != NULL; ++j){
+            int duration = durationFromLetter(token[strlen(token)-1]);
+            char note_str[4] = "";
+            strncpy(note_str, token, strlen(token)-2);
+            int note_int = noteNumberFromString(note_str);
+            temp_tab[i][note_int-1] = '^';
+            if (duration > 1){
+                for (int k = 1; k < duration; ++k){
+                    temp_tab[i+k][note_int-1] = 'x';
                 }
             }
+            token = strtok(NULL, ",");
         }
-        fprintf(wpf, "\n");
     }
 
-    char notes[60][4] = {
-            "C1", "C#1", "D1", "D#1", "E1", "F1", "F#1", "G1", "G#1", "A1", "A#1", "B1",
-            "C2", "C#2", "D2", "D#2", "E2", "F2", "F#2", "G2", "G#2", "A2", "A#2", "B2",
-            "C3", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3",
-            "C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4",
-            "C5", "C#5", "D5", "D#5", "E5", "F5", "F#5", "G5", "G#5", "A5", "A#5", "B5"
-    };
-
-
     fclose(wpf);
+    fclose(rpf);
 }
