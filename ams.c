@@ -64,7 +64,7 @@ int noteNumberFromString(char* string){
     };
     int index = -1;
     for (int i = 0; i < 60; ++i) {
-        if (strcmp(notes[i], string)){
+        if (!strcmp(notes[i], string)){
             index = i+1;
         }
     }
