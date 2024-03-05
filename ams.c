@@ -113,9 +113,7 @@ void createAMS(char* txtFileName, char* amsFileName){
     char tpm[MAX_TPM_SIZE] ="";
     fgets(tpm, MAX_TPM_SIZE, rpf); // 2eme ligne : tpm
     fprintf(wpf, title);
-    fprintf(wpf, "\n");
     fprintf(wpf, tpm);
-    fprintf(wpf, "\n");
     fprintf(wpf, "\n");
 
     // entêtes de colonnes
@@ -123,6 +121,7 @@ void createAMS(char* txtFileName, char* amsFileName){
     for(int i = 1; i <= 60; i++){
         fprintf(wpf, "%02d ", i);
     }
+    fprintf(wpf, "\n");
 
     char buffer[10] = "";
     fgets(buffer, 10, rpf); // 3ème ligne vide
@@ -134,30 +133,35 @@ void createAMS(char* txtFileName, char* amsFileName){
         }
     }
 
+    int nb_ticks = 0;
     char line[MAX_SIZE_LINE] = "";
-    for (int i = 0; fgets(line, MAX_SIZE_LINE, rpf) != EOF; ++i) { // i = indice d'un tick/ligne d'ams
-        char* token = strtok(line, ",");
+    for (int i = 0; fgets(line, MAX_SIZE_LINE, rpf) != NULL; ++i) { // i = indice d'un tick/ligne d'ams
+        char* token = strtok(line, ",\r\n");
         for (int j = 0; token != NULL; ++j){
+            // séparation de la note et du nombre de ticks
             int duration = durationFromLetter(token[strlen(token)-1]);
             char note_str[4] = "";
             strncpy(note_str, token, strlen(token)-2);
             int note_int = noteNumberFromString(note_str);
+
+            // remplissage du tableau
             temp_tab[i][note_int-1] = '^';
-            if (duration > 1){
-                for (int k = 1; k < duration; ++k){
-                    temp_tab[i+k][note_int-1] = 'x';
-                }
+            for (int k = 1; k < duration; ++k){
+                temp_tab[i+k][note_int-1] = 'x';
             }
-            token = strtok(NULL, ",");
+            token = strtok(NULL, ",\r\n");
         }
+        nb_ticks++;
     }
 
-    for (int i = 0; i < MAX_NUMBER_TICKS; ++i) {
+    // écriture dans le fichier à partir du tableau
+    for (int i = 0; i < nb_ticks; ++i) {
         fprintf(wpf, "%03d|", i+1);
         for (int j = 0; j < 60; ++j) {
             fprintf(wpf, "%c", temp_tab[i][j]);
             fprintf(wpf, " |");
         }
+        fprintf(wpf, "\n");
     }
 
     fclose(wpf);
