@@ -13,23 +13,27 @@
  */
 s_tick tickFromLine(char* line){
     s_tick tick_;
+    for (int i = 0; i < 4; ++i) {
+        tick_.note[i] = -1;
+    }
     int j = 0;
 
     char* token = strtok(line, "|"); // ignore la première colonne aka l'index
+    token = strtok(NULL, "|");
     for (int i = 0; token != NULL; ++i) {
-        token = strtok(NULL, "|");
         switch (token[0]) {
             case '^':
                 tick_.accent = 1;
-                tick_.note[j] = i;
+                tick_.note[j] = i+1;
                 j++;
                 break;
             case 'x':
                 tick_.accent = 0;
-                tick_.note[j] = i;
+                tick_.note[j] = i+1;
                 j++;
                 break;
         }
+        token = strtok(NULL, "|");
     }
     return tick_;
 }
@@ -46,13 +50,13 @@ s_song readAMS(char* fileName){
 
 	}else{
 		fgets(mySong.title, MAX_SIZE_TITLE, pf); // 1ere ligne : titre
-        char tpm[4] ="";
-		fgets(tpm, 4, pf); // 2eme ligne : tpm
+        char tpm[5] ="";
+		fgets(tpm, 5, pf); // 2eme ligne : tpm
         mySong.tpm = atoi(tpm);
 
         char buffer[MAX_SIZE_LINE] = "";
-        fgets(buffer,0,pf); // les lignes 3 et 4 ne comptent pas
-        fgets(buffer,0,pf);
+        fgets(buffer,MAX_SIZE_LINE,pf); // la ligne 3 est vide
+        fgets(buffer,MAX_SIZE_LINE,pf); // la ligne 4 contient les entêtes des colonnes
 
         int nb_ticks = 0;
 		while(fgets(buffer, MAX_SIZE_LINE, pf) != EOF){
