@@ -23,8 +23,14 @@ FT_HANDLE initUSB(){
 
     ftStatus |= FT_SetTimeouts(ftHandle, 5000, 1000); // pas recevoir trop de données
 
-    return ftHandle;
+    if(ftStatus != FT_OK){
+        printf("it works pas\n");
+    }
+    else{
+        printf("it works\n");
+    }
 
+    return ftHandle;
 }
 void closeUSB(FT_HANDLE ftHandle){
     FT_Close(ftHandle);
@@ -32,5 +38,14 @@ void closeUSB(FT_HANDLE ftHandle){
 
 
 void writeUSB(char* frame, FT_HANDLE ftHandle){
-    FT_Write(ftHandle, frame, strlen(frame), &BytesWritten);
+    FT_STATUS ftStatus;
+    DWORD BytesWritten;
+    ftStatus = FT_Write(ftHandle, frame, strlen(frame), &BytesWritten);
+
+    if(ftStatus != FT_OK){
+        printf("it works pas\n");
+    }
+    else{
+        printf("it works\n");
+    }
 }
