@@ -6,6 +6,7 @@
 #include "amp.h"
 #include "ams.h"
 #include "frame.h"
+#include "autotests.h"
 
 void test_frame(){
     s_tick tick;
@@ -37,7 +38,14 @@ void test_createAMS(){
     createAMS("bohemian_rhapsody.txt", "test.ams");
 }
 
+void autotests(){
+    testCreateAMS();
+    testReadAMS();
+    testReadAMP();
+    testFrame();
+}
+
 int main(){
-    test_createAMS();
+    autotests();
     return 0;
 }

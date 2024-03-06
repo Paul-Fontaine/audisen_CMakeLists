@@ -4,6 +4,7 @@
 
 #include "define.h"
 #include "ams.h"
+#include "amp.h"
 
 /**
  * tested, it works !
@@ -14,7 +15,7 @@
 s_tick tickFromLine(char* line){
     s_tick tick_;
     for (int i = 0; i < 4; ++i) {
-        tick_.note[i] = -1;
+        tick_.note[i] = 0;
     }
     int j = 0;
 
@@ -64,7 +65,7 @@ int noteNumberFromString(char* string){
     };
     int index = -1;
     for (int i = 0; i < 60; ++i) {
-        if (strcmp(notes[i], string)){
+        if (!strcmp(notes[i], string)){
             index = i+1;
         }
     }
@@ -76,23 +77,31 @@ s_song readAMS(char* fileName){
 	s_song mySong;
 
 	if(pf == NULL){
-        printf("file not oppened ! from readAMS()");
+        printf("file not opened ! from readAMS()\n");
 		mySong.title[0] = '\0';
 		mySong.tpm = 0;
 		mySong.nTicks = 0;
+        for (int i = 0; i < MAX_NUMBER_TICKS; ++i) {
+            mySong.tickTab[i].accent = 0;
+            for (int j = 0; j < 4; ++j) {
+                mySong.tickTab[i].note[j] = 0;
+            }
+        }
 
 	}else{
 		fgets(mySong.title, MAX_SIZE_TITLE, pf); // 1ere ligne : titre
-        char tpm[MAX_TPM_SIZE] ="";
-		fgets(tpm, MAX_TPM_SIZE, pf); // 2eme ligne : tpm
-        mySong.tpm = atoi(tpm);
+        removeCharAtIndex(mySong.title, strlen(mySong.title)-1); // but : enlever le \n à la fin pour passer l'autotest
+        char bpm[MAX_TPM_SIZE] ="";
+		fgets(bpm, MAX_TPM_SIZE, pf); // 2eme ligne : tpm
+        mySong.tpm = atoi(bpm)*2; // 1 tick = 0.5 temps. D'où le * 2.
 
         char buffer[MAX_SIZE_LINE] = "";
         fgets(buffer,MAX_SIZE_LINE,pf); // la ligne 3 est vide
         fgets(buffer,MAX_SIZE_LINE,pf); // la ligne 4 contient les entêtes des colonnes
 
         int nb_ticks = 0;
-		while(fgets(buffer, MAX_SIZE_LINE, pf) != EOF){
+		while(!feof(pf)){
+            fgets(buffer, MAX_SIZE_LINE, pf);
             mySong.tickTab[nb_ticks] = tickFromLine(buffer);
 			nb_ticks++;
 		}
@@ -101,8 +110,6 @@ s_song readAMS(char* fileName){
 
 	return mySong;
 }
-
-
 
 void createAMS(char* txtFileName, char* amsFileName){
     FILE* rpf = fopen(txtFileName, "r");
@@ -113,16 +120,15 @@ void createAMS(char* txtFileName, char* amsFileName){
     char tpm[MAX_TPM_SIZE] ="";
     fgets(tpm, MAX_TPM_SIZE, rpf); // 2eme ligne : tpm
     fprintf(wpf, title);
-    fprintf(wpf, "\n");
     fprintf(wpf, tpm);
-    fprintf(wpf, "\n");
-    fprintf(wpf, "\n");
+    fprintf(wpf, "\r\n");
 
     // entêtes de colonnes
     fprintf(wpf, "    ");
     for(int i = 1; i <= 60; i++){
         fprintf(wpf, "%02d ", i);
     }
+    fprintf(wpf, "\r\n");
 
     char buffer[10] = "";
     fgets(buffer, 10, rpf); // 3ème ligne vide
@@ -134,21 +140,38 @@ void createAMS(char* txtFileName, char* amsFileName){
         }
     }
 
+    int nb_ticks = 0;
     char line[MAX_SIZE_LINE] = "";
-    for (int i = 0; fgets(line, MAX_SIZE_LINE, rpf) != EOF; ++i) { // i = indice d'un tick/ligne d'ams
-        char* token = strtok(line, ",");
+    for (int i = 0; fgets(line, MAX_SIZE_LINE, rpf) != NULL; ++i) { // i = indice d'un tick/ligne d'ams
+        char* token = strtok(line, ",\r\n");
         for (int j = 0; token != NULL; ++j){
+            // séparation de la note et du nombre de ticks
             int duration = durationFromLetter(token[strlen(token)-1]);
             char note_str[4] = "";
+            if (token[0] == ' '){ removeCharAtIndex(token, 0);}
             strncpy(note_str, token, strlen(token)-2);
             int note_int = noteNumberFromString(note_str);
+
+
+            // remplissage du tableau
             temp_tab[i][note_int-1] = '^';
-            if (duration > 1){
-                for (int k = 1; k < duration; ++k){
-                    temp_tab[i+k][note_int-1] = 'x';
-                }
+            for (int k = 1; k < duration; ++k){
+                temp_tab[i+k][note_int-1] = 'x';
             }
-            token = strtok(NULL, ",");
+            token = strtok(NULL, ",\r\n");
+        }
+        nb_ticks++;
+    }
+
+    // écriture dans le fichier à partir du tableau
+    for (int i = 0; i < nb_ticks; ++i) {
+        fprintf(wpf, "%03d|", i+1);
+        for (int j = 0; j < 60; ++j) {
+            fprintf(wpf, "%c", temp_tab[i][j]);
+            fprintf(wpf, " |");
+        }
+        if (i != nb_ticks-1) {
+            fprintf(wpf, "\r\n");
         }
     }
 

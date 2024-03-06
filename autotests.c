@@ -1,4 +1,3 @@
-
 #include "define.h"
 #include "autotests.h"
 #include "ams.h"
@@ -88,6 +87,9 @@ void testReadAMS(){
 					if(mySong.tickTab[i].note[k]==note[k]){
 						cpt++;
 					}
+                    else {
+                        printf("salope");
+                    }
 				}
 			}
 		}
@@ -298,6 +300,9 @@ void testCreateAMS(){
 				if(strcmp(buffer,buffer_ref)==0){
 					nCorrectLines+=1;
 				}
+                else {
+                    printf("salope");
+                }
 			}
 		}
 		if(nLines==nCorrectLines){

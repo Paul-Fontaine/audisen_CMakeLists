@@ -29,8 +29,16 @@ void removeCharAtIndex(char* s, int i){
     memmove(&s[i], &s[i + 1], strlen(s) - i);
 }
 
+void removeTrailingUnderscores(char *s) {
+    int l = strlen(s);
+    while (l > 0 && s[l - 1] == '_') {
+        s[--l] = '\0';
+    }
+}
+
 void removeMultiplesUnderscores(char* s){
-    for (int i = 0; i < strlen(s); ++i){
+    int l = strlen(s);
+    for (int i = 0; i < l; ++i){
         if (s[i] == '_'){
             while (s[i+1] == '_'){
                 removeCharAtIndex(s, i+1);
@@ -45,6 +53,8 @@ void reformat(char* s){
     lower(s);
     replaceWithUnderscores(s);
     removeMultiplesUnderscores(s);
+    removeTrailingUnderscores(s);
+    strcat(s, ".ams");
 }
 
 /**
@@ -58,7 +68,6 @@ FILE* initAMP(char* filename){
 
     if (pf == NULL){
         printf("error ! cannot open the file '%s'\n", filename);
-        exit(1);
     }
 
     return pf;
