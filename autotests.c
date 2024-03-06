@@ -1,4 +1,3 @@
-
 #include "define.h"
 #include "autotests.h"
 #include "ams.h"
