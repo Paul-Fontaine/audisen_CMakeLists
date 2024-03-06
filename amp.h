@@ -13,6 +13,8 @@ void replaceWithUnderscores(char* s);
 
 void removeCharAtIndex(char* s, int i);
 
+void removeTrailingUnderscores(char *s);
+
 void removeMultiplesUnderscores(char* s);
 
 void reformat(char* s);
