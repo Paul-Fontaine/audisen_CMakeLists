@@ -50,7 +50,7 @@ int durationFromLetter(char letter){
         case 'C':
             return 1;
         default:
-            printf("Format error, I don't know this note %c", letter);
+            printf("Format error, unknown note %c", letter);
             return 0;
     }
 }
